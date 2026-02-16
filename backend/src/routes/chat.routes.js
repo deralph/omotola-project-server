@@ -1,0 +1,11 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+const { aiLimiter } = require('../middleware/rateLimiter');
+const c = require('../controllers/chatController');
+const router = express.Router();
+router.use(auth);
+router.post('/message', aiLimiter, c.sendMessage);
+router.get('/history', c.getHistory);
+router.delete('/history/:sessionId', c.deleteHistory);
+router.post('/context', c.setContext);
+module.exports = router;
