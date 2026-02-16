@@ -1,0 +1,11 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+const upload = require('../middleware/fileUpload');
+const c = require('../controllers/userController');
+const router = express.Router();
+router.use(auth);
+router.get('/profile', c.getProfile);
+router.put('/profile', c.updateProfile);
+router.put('/preferences', c.updatePreferences);
+router.put('/picture', upload.single('image'), c.updatePicture);
+module.exports = router;

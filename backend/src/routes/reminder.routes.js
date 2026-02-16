@@ -1,0 +1,10 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+const c = require('../controllers/reminderController');
+const router = express.Router();
+router.use(auth);
+router.get('/', c.listReminders);
+router.post('/', c.createReminder);
+router.put('/:id', c.updateReminder);
+router.delete('/:id', c.deleteReminder);
+module.exports = router;

@@ -1,0 +1,13 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+const { aiLimiter } = require('../middleware/rateLimiter');
+const c = require('../controllers/quizController');
+const router = express.Router();
+router.use(auth);
+router.get('/', c.listQuizzes);
+router.post('/generate', aiLimiter, c.generateQuiz);
+router.get('/:id', c.getQuiz);
+router.post('/:id/submit', c.submitQuiz);
+router.get('/:id/results', c.getResults);
+router.delete('/:id', c.deleteQuiz);
+module.exports = router;

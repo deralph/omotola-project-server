@@ -1,0 +1,11 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+const c = require('../controllers/analyticsController');
+const router = express.Router();
+router.use(auth);
+router.get('/progress', c.progress);
+router.get('/performance', c.performance);
+router.get('/study-time', c.studyTime);
+router.get('/strengths-weaknesses', c.strengthsWeaknesses);
+router.post('/track-event', c.trackEvent);
+module.exports = router;
