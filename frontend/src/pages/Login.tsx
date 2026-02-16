@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { authApi } from '@/lib/auth-api';
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
@@ -11,16 +12,38 @@ export default function Login() {
   const [name, setName] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const passwordStrength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3;
   const strengthLabels = ['', 'Weak', 'Fair', 'Strong'];
   const strengthColors = ['', 'bg-destructive', 'bg-accent', 'bg-secondary'];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success(isRegister ? 'Account created!' : 'Welcome back!');
-    navigate('/');
+    setIsSubmitting(true);
+
+    try {
+      const response = isRegister
+        ? await authApi.register({
+            name,
+            email,
+            password,
+          })
+        : await authApi.login({
+            email,
+            password,
+          });
+
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('authUser', JSON.stringify(response.user));
+      toast.success(isRegister ? 'Account created!' : 'Welcome back!');
+      navigate('/');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Authentication failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -90,8 +113,8 @@ export default function Login() {
             </div>
           )}
 
-          <button type="submit" className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 hover:opacity-90 transition">
-            {isRegister ? 'Create Account' : 'Sign In'} <ArrowRight className="h-4 w-4" />
+          <button type="submit" disabled={isSubmitting} className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-70 disabled:cursor-not-allowed">
+            {isSubmitting ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'} <ArrowRight className="h-4 w-4" />
           </button>
 
           <div className="relative my-4">
