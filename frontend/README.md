@@ -71,3 +71,43 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+Keeping Lovable & backend in sync (this is the key part)
+🔽 When Lovable updates the frontend
+
+(run this in backend repo)
+
+git subtree pull \
+ --prefix=frontend \
+ https://github.com/deralph/study-mate-ai.git \
+ main \
+ --squash
+
+🔼 If you ever want to push frontend changes back to Lovable
+git subtree push \
+ --prefix=frontend \
+ https://github.com/deralph/study-mate-ai.git \
+ main
+
+⚠️ Only do this if you intentionally edit frontend inside the backend repo.
+
+🔗 Frontend ↔ Backend communication (clean setup)
+Backend
+
+Let backend run on:
+
+http://localhost:4000
+
+(or whatever port you use)
+
+Frontend (Lovable / Vite / React)
+
+In /frontend/.env:
+
+VITE_API_BASE_URL=http://localhost:4000
+
+Usage:
+
+fetch(`${import.meta.env.VITE_API_BASE_URL}/api/chat`)
+
+For prod, Lovable will swap envs automatically.
