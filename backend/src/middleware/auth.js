@@ -1,18 +1,25 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const ApiError = require('../utils/ApiError');
+const { getDB } = require('../db/database');
 
-module.exports = async (req, _res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) return next(new ApiError(401, 'Unauthorized'));
-  const token = authHeader.split(' ')[1];
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) return res.status(401).json({ error: 'Access token required' });
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
-    if (!user) return next(new ApiError(401, 'Invalid token user'));
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'studymate_secret_key_2024');
+    const db = getDB();
+    const user = db.prepare(
+      'SELECT id, name, email, department, year, university, avatar, study_streak, level, points FROM users WHERE id = ?'
+    ).get(decoded.userId);
+
+    if (!user) return res.status(401).json({ error: 'User not found' });
     req.user = user;
-    return next();
-  } catch (_err) {
-    return next(new ApiError(401, 'Invalid token'));
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: 'Invalid or expired token' });
   }
-};
+}
+
+module.exports = { authenticateToken };
